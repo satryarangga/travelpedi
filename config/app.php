@@ -14,7 +14,13 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    'API_KEY' => env('API_KEY', null),
+    'api_key' => env('API_KEY', null),
+
+    'root_api_url' => env('ROOT_API_URL', null),
+
+    'output_api' => env('OUTPUT_API', null),
+
+    'lang_api' => env('LANG_API', null),
 
     /*
     |--------------------------------------------------------------------------

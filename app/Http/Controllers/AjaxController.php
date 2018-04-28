@@ -16,10 +16,10 @@ class AjaxController extends Controller {
   private $lang;
 
   public function __construct() {
-    $this->url = env('ROOT_API_URL');
-    $this->key = env('API_KEY');
-    $this->output = env('OUTPUT_API');
-    $this->LANG = env('API_LANG');
+    $this->url = config('app.root_api_url');
+    $this->key = config('app.api_key');
+    $this->output = config('app.output_api');
+    $this->lang = config('app.lang_api');
   }
 
   private function getToken (){
