@@ -16,9 +16,9 @@ class AjaxController extends Controller {
   private $lang;
 
   public function __construct() {
-    $this->url = "http://api-sandbox.tiket.com";
-    $this->key = "f3cf5581e28aba584562fd60037f63d0";
-    $this->output = "json";
+    $this->url = env('ROOT_API_URL');
+    $this->key = env('API_KEY');
+    $this->output = env('OUTPUT_API');
     $this->LANG = env('API_LANG');
   }
 
