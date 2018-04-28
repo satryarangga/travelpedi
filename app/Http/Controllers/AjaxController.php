@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
 
 class AjaxController extends Controller {
 
@@ -14,23 +15,31 @@ class AjaxController extends Controller {
   private $key;
   private $output;
   private $lang;
+  private $cache;
 
   public function __construct() {
     $this->url = config('app.root_api_url');
     $this->key = config('app.api_key');
     $this->output = config('app.output_api');
     $this->lang = config('app.lang_api');
+    $this->cache = 'tiket_token';
   }
 
   private function getToken (){
     $client = new Client();
     $res = $client->request('GET', $this->url.'/api/v1/payexpress?method=getToken&secretkey='.$this->key.'&output='.$this->output);
-    return $res->getBody();
+    $data = json_decode($res->getBody()->getContents(), 1);
+    return $data;
   }
 
   public function hotel (Request $request) {
+    if (!Cache::has($this->cache)) {
+      $getToken = $this->getToken();
+      $token = $getToken['token'];
+      Cache::put($this->cache, $token, 1440); // 1 DAY
+    }
     $client = new Client();
-    $token = $request->input('token');
+    $token = Cache::get($this->cache);
     $keyword = $request->input('hotel_name');
     $hotelId = $request->input('hotel_id');
     $page = ($request->input('page')) ? $request->input('page') : 1;
@@ -56,10 +65,16 @@ class AjaxController extends Controller {
         if($value['hotel_id'] == $hotelId) {
           $res = $client->request('GET', $value['business_uri'] . "&token=$token&output=json");
           $dataHotel = json_decode($res->getBody()->getContents(), 1);
-          return $dataHotel;
+          $response['name'] = $dataHotel['breadcrumb']['business_name'];
+          if(isset($dataHotel['results']['result'])) {
+            $response = $dataHotel['results']['result'];
+            return $this->apiSuccess($response);
+          }
         }
       }
     }
+
+    return $this->apiError($statusCode = 404, $message = 'No Data Room Available');
   }
 
 }
